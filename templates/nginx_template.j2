@@ -1,0 +1,79 @@
+{% for server in servers -%}{% for http_config in server.http -%}{% if http_config.route -%}
+upstream {{ http_config.name }} {
+    {% for route in http_config.route -%} server {{ route.destination.host }}:{{ route.destination.port }};
+    {% endfor %}   
+}
+{% endif -%}
+{% endfor -%}
+server {
+    {% if server.port.protocol == 'HTTPS' -%}
+    listen {{ server.port.number }} ssl;
+    ssl_certificate /etc/nginx/ssl/{{ server.tls.certificate_file }};
+    ssl_certificate_key /etc/nginx/ssl/{{ server.tls.key_file }};
+    {% else -%}
+    listen {{ server.port.number }}
+    {% endif -%}
+
+    {% for host in server.hosts -%}
+    server_name {{ host }};
+    {% endfor -%}
+    {% for http_config in server.http %}
+    {% if http_config.match.uri.exact -%}
+    location = {{ http_config.match.uri.exact }} {
+    {% elif http_config.match.uri.prefix -%}
+    location {{ http_config.match.uri.prefix }} {
+    {% elif http_config.match.uri.regex -%}
+    location ~* {{ http_config.match.uri.regex }} {
+    {% endif %}
+        {% if http_config.block -%}
+        {% if http_config.block.allow -%}{% for allow_ip in http_config.block.allow -%}
+        allow {{ allow_ip }};
+        {% endfor -%}
+        deny all;
+        {% endif -%}
+        {% if http_config.block.deny -%}{% for deny_ip in http_config.block.deny -%}
+        deny {{ deny_ip }};
+        {% endfor -%}
+        allow all;
+        {% endif -%}
+        {% if http_config.block.returnCode -%}
+        return {{ http_config.block.returnCode }};{% endif -%}
+        {% endif -%}
+        {% if http_config.route -%}
+        proxy_pass http://{{ http_config.name }}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        {% elif http_config.redirect -%}
+        return {{ http_config.redirect.redirectCode }} {{ http_config.redirect.uri }};
+        {% endif -%}
+        {% if http_config.fault -%}{% if http_config.fault.abort %}
+        if (rand() < {{ http_config.fault.abort.percentage }} / 100.0) {
+            return {{ http_config.fault.abort.httpStatus }};
+        }
+        {% endif %}
+        {% if http_config.fault.delay %}
+        if (rand() < {{ http_config.fault.delay.percentage }} / 100.0) {
+            set $delayed 1;
+            rewrite_by_lua '
+                ngx.sleep({{ http_config.fault.delay.fixedDelay[:-1] }});
+            ';
+        }
+        {% endif -%}{% endif -%}
+        {% if http_config.directResponse -%}
+        return {{ http_config.directResponse.httpStatus }} "{{ http_config.directResponse.body.string }}";
+        {% endif %}
+    }
+    {% endfor %}
+}
+{% if server.tls.httpsRedirect -%}
+server {
+    listen 80;
+    {% for host in server.hosts -%}
+    server_name {{ host }};
+    {% endfor -%}
+    return 301 https://$host$request_uri;
+}
+{% endif -%}
+{% endfor %}
