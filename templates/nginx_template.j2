@@ -1,6 +1,6 @@
 {% for server in servers -%}{% for http_config in server.http -%}{% if http_config.route -%}
 upstream {{ http_config.name }} {
-    {% for route in http_config.route -%} server {{ route.destination.host }}:{{ route.destination.port }};
+    {% for route in http_config.route -%} server {{ route.destination.host }}:{{ route.destination.port }}{% if route.weight is not none %} weight={{ route.weight }}{% endif %};
     {% endfor %}   
 }
 {% endif -%}

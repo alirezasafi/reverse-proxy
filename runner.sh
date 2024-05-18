@@ -11,7 +11,7 @@ install_requirements() {
     pip3 install -r python/requirements.txt
 }
 
-main() {
+run() {
     echo "Using config: $CONFIG_FILE"
     python3 python/reverse_proxy.py $CONFIG_FILE $TEMPLATE_FILE
 }
@@ -31,4 +31,4 @@ for argument in "$@"; do
     esac
 done
 
-main
+run

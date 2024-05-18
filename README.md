@@ -33,7 +33,7 @@ A list of server specifications.
 ### ServerTLS
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| httpsRedirect | `bool` | 	If set to true, the load balancer will send a 301 redirect for all http connections, asking the clients to use HTTPS.
+| httpsRedirect | `bool` | If set to true, the load balancer will send a 301 redirect for all http connections, asking the clients to use HTTPS.
 | certificate_file | `string` | The path to the file holding the server-side TLS certificate to use.
 | key_file | `string` | The path to the file holding the server’s private key.
 ### HTTPMatchRequest
@@ -67,14 +67,14 @@ A list of server specifications.
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | status | `integer` | Specifies the HTTP response status to be returned.
-| body | [`HTTPBody`](#httpbody)
+| body | [`HTTPBody`](#httpbody) | Specifies the content of the response body. If this setting is omitted, no body is included in the generated response.
 
 ### HTTPBlock
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | returnCore | `integer` | Specified the HTTP response status to be returned.
-| allow | `string[]` | Allow access for specific uri for list of ip address.
-| deny | `string[]` | Deny access for specific uri for list of ip address.
+| allow | `string[]` | Allow access to uri for list of ip address.
+| deny | `string[]` | Deny access to uri for list of ip address.
 
 ### Destination
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |

@@ -1,3 +1,4 @@
+import os
 import re
 import yaml
 import argparse
@@ -35,7 +36,9 @@ class StringMatch:
     regex: Optional[str] = None
 
     def validate(self):
-        if self.exact is None and self.prefix is None and self.regex is None:
+        attributes = [self.exact, self.prefix, self.regex]
+        non_none_attributes = [attr for attr in attributes if attr is not None]
+        if len(non_none_attributes) != 1:
             raise ValueError("One of 'exact', 'prefix', or 'regex' must be specified.")
 
 
@@ -80,6 +83,10 @@ class HTTPFaultInjection:
     abort: Optional[Abort] = None
 
     def validate(self):
+        if self.delay and self.abort:
+            raise ValueError(
+                "A fault rule must have delay or abort or both!"
+            )
         if self.delay:
             self.delay.validate()
         if self.abort:
@@ -97,6 +104,12 @@ class HTTPRedirect:
     uri: str
     redirectCode: Optional[int] = HTTP_REDIRECT_CODE
 
+    def validate(self):
+        if (self.redirectCode is not None and not self.redirectCode > 0):
+            raise ValueError(
+                f"Weight value isn't valid! must be a positive integer. got {self.redirectCode}"
+            )
+
 @dataclass
 class Destination:
     host: str
@@ -108,6 +121,11 @@ class HTTPRoute:
     destination: Destination
     weight: Optional[int] = None
 
+    def validate(self):
+        if (self.weight is not None and not self.weight > 0):
+            raise ValueError(
+                f"Weight value isn't valid! must be a positive integer. got {self.weight}"
+            )
 
 @dataclass
 class HTTPBlock:
@@ -116,7 +134,7 @@ class HTTPBlock:
     deny: Optional[List[str]] = None
     
     def validate(self):
-        if self.returnCode and (not isinstance(self.returnCode, int) or not 100 < self.returnCode < 599):
+        if self.returnCode is not None and not 100 < self.returnCode < 599:
             raise ValueError(
                 f"HTTP block return code isn't valid! must be an integer between 100 and 599." 
                 f" got {self.returnCode}"
@@ -133,6 +151,7 @@ class HTTPBlock:
             logger.warning(
                 "The fields 'allow' and 'deny' aren't work properly when you use 'returnCode'!"
             )
+
 @dataclass
 class HTTP:
     name: str
@@ -150,6 +169,12 @@ class HTTP:
             self.match.uri.validate()
         if self.fault:
             self.fault.validate()
+        if self.route:
+            for route in self.route:
+                route.validate()
+        if self.directResponse:
+            if self.route or self.redirect:
+                logger.error("directResponse can be set only when `route` and `redirect` are empty!")
 
 @dataclass
 class ServerTLS:
@@ -158,6 +183,14 @@ class ServerTLS:
     key_file: str
 
     def validate(self, port_number):
+        if not os.path.exists(self.certificate_file):
+            raise ValueError(
+                "Certificate file not found!"
+            )
+        if not os.path.exists(self.key_file):
+            raise ValueError(
+                "TLS Key file not found!"
+            )
         if port_number != SSL_PORT_NUMBER and self.httpsRedirect:
             raise ValueError(
                 f"To enabling ssl protocol you should change the port number to {SSL_PORT_NUMBER}."
@@ -220,7 +253,7 @@ def load_config(file_path: str) -> Config:
                 f"Failure parsing field `{error.field_name}` in config `{error.class_name}`.\n"
                 f"Expected a type `{error.ann_type}`, got `{error.obj_type}`\n"
                 f"Value: `{error.obj}`"
-            )
+            )   
             exit(code=1)
         except ValueError as error:
             logger.error(error)
@@ -244,7 +277,7 @@ def main():
     parser.add_argument("config", type=str, help="Path to the configuration YAML file.")
     parser.add_argument("template", type=str, help="Path to the nginx template file.")
     args = parser.parse_args()
-
+    logger.info(f"Using config: {args.config}")
     config = load_config(args.config)
     nginx_config = render_nginx_config(config, args.template)
 
