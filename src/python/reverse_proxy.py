@@ -235,6 +235,7 @@ class Config(JSONWizard):
         debug_enabled = True
 
     servers: List[Server]
+    name: str
 
     def validate(self):
         for server in self.servers:
@@ -276,12 +277,12 @@ def main():
     parser = argparse.ArgumentParser(description="Generate NGINX configuration from YAML config.")
     parser.add_argument("config", type=str, help="Path to the configuration YAML file.")
     parser.add_argument("template", type=str, help="Path to the nginx template file.")
+    parser.add_argument("output", type=str, help="Output directory.")
     args = parser.parse_args()
-    logger.info(f"Using config: {args.config}")
     config = load_config(args.config)
     nginx_config = render_nginx_config(config, args.template)
 
-    with open('/etc/nginx/conf.d/nginx.conf', 'w') as file:
+    with open(f'{args.output}/{config.name}.conf', 'w') as file:
         file.write(nginx_config)
 
 if __name__ == "__main__":

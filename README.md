@@ -1,6 +1,10 @@
 # Configuration Schema
+| Name  | Type       | Description                                                                                                                                                                         |
+|-------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name | `string` | The name of nginx configuration file.
+| servers | [`Servers`](#servers) | List of server specification.
 
-## Servers
+### Servers
 A list of server specifications.
 
 | Name  | Type       | Description                                                                                                                                                                         |
