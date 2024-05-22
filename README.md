@@ -114,5 +114,50 @@ It supports:
         key_file: /path/to/example.key
     ```
 
+## Pre-requisite
+Before installing and using the Reverse Proxy, ensure you have the following prerequisites met:
+- **Python (3.7 or higher)**: Python 3.7 or a newer version must be installed on your system to run the configuration and deployment scripts.
+- **NGINX**: The Reverse Proxy is built on NGINX, so having NGINX installed on your system is essential. It can be installed on most operating systems using the respective package manager.
+- **YAML Configuration Understanding**: Since the configuration files are in YAML format, understanding how to work with YAML files is necessary for modifying the configurations.
+- **Basic Networking Knowledge**: Familiarity with networking concepts such as HTTP/HTTPS, ports, DNS, etc., is recommended to effectively use and troubleshoot the proxy setup.
+
+## Installation
+To install Reverse Proxy, follow these steps:
+1. Clone the repository:
+   ```bash
+   git clone [repository-url]
+   cd reverse-proxy
+   ```
+2. Install Requirements: Use the script provided to install all necessary dependencies
+    ```bash
+    ./runner.sh --install-requirements
+    ```
+
+
+## Usage
+Once you have installed all required components, you can start using the service by configuring and deploying your NGINX setups.
+### Configuring the Service
+To specify a configuration file other than the default config.yaml, use the --config option:
+```bash
+./runner.sh --config=/path/to/your_config.yaml
+```
+### Deploying to a Host
+Deploy the NGINX configuration to a specific host using SSH credentials or an SSH private key. if you don't use the `host` option the execution process will be in the localhost:
+- **Using Password Authentication**:
+    ```bash
+    ./runner.sh --config=/path/to/your_config.yaml --host=<hostname or ip> --username=myuser --password=mypassword
+    ```
+- **Using an SSH Private Key**:
+    ```bash
+    ./runner.sh --config=/path/to/your_config.yaml --host=hostname --username=myuser --key=/path/to/private_key
+    ```
+### Dry Run
+Before actually deploying, you can perform a dry run to validate the input configuration. the nginx config file will be generated in `output` directory:
+```bash
+./runner.sh --config=/path/to/your_config.yaml --dry-run 
+```
+
+
+
 ## Configuration Schema
 For detailed information about configuring our service, see the [Configuration Schema](docs/configuration.md).
