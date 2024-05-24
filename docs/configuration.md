@@ -35,7 +35,10 @@ A list of server specifications.
 | *fault      | [`HTTPFaultInjection`](#httpfaultinjection)       | Fault injection policy to apply on HTTP traffic at the client side.                                                                                                                                                                                                                                             |
 | directResponse | [`HTTPDirectResponse`](#httpdirectresponse) | Direct Response is used to specify a fixed response that should be sent to clients. It can be set only when Route and Redirect are empty.|
 | block | [`HTTPBlock`](#httpblock) | The block primitive can be used to deny or allow access from all users or specific IP addresses.|
-
+| *timeout | `Duration` | Timeout for HTTP requests, default is disabled.
+| *rewrite | [`HTTPRewrite`](#httprewrite) | Rewrite HTTP URIs and Authority headers. Rewrite cannot be used with Redirect primitive. Rewrite will be performed before forwarding.
+| *mirrors | [`HTTPMirror`](#httpmirror) | Specifies the destinations to mirror HTTP traffic in addition to the original destination. Mirrored traffic is on a best effort basis where the sidecar/gateway will not wait for the mirrored destinations to respond before returning the response from the original destination. Statistics will be generated for the mirrored destination.
+| *headers | [`Header`](#) | Header manipulation rules.
 ### ServerTLS
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -82,6 +85,23 @@ A list of server specifications.
 | allow | `string[]` | Allow access to uri for list of ip address.
 | deny | `string[]` | Deny access to uri for list of ip address.
 
+### HTTPRewrite
+| Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
+|------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| *uri | `string` | rewrite the path (or the prefix) portion of the URI with this value. If the original URI was matched based on prefix, the value provided in this field will replace the corresponding matched prefix.
+
+### HTTPMirror
+| Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
+|------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| *destination | [`Destination`](#destination) | Destination specifies the target of the mirror operation.
+| *percentage | `double` | Percentage of the traffic to be mirrored by the destination field. If this field is absent, all the traffic (100%) will be mirrored. Max value is 100.
+
+### Header
+| Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
+|------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| *request | [`HeaderOperation`](#) | Header manipulation rules to apply before forwarding a request to the destination service.
+| *response | [`HeaderOperation`](#) | Header manipulation rules to apply before returning a response to the caller
+
 ### Destination
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -99,6 +119,13 @@ A list of server specifications.
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | *httpStatus | `integer` | HTTP status code to use to abort the Http request. |
 | *percentage | `double` | Percentage of requests to be aborted with the error code provided. If not specified, no request will be aborted. [0.0, 100.0]
+
+#### HeaderOperation
+| Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
+|------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| *set | `map<string, string>` | Overwrite the headers specified by key with the given values
+| *add | `map<string, string>` | Append the given values to the headers specified by keys (will create a comma-separated list of values)
+| *remove | `string[]` | Remove the specified headers 
 
 #### HTTPBody
 
