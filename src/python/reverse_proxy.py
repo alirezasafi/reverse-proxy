@@ -20,7 +20,6 @@ handler.setFormatter(colorlog.ColoredFormatter(
 
 logger = colorlog.getLogger('reverse_proxy')
 logger.addHandler(handler)
-# Define data classes based on README.md descriptions
 
 SSL_PORT_NUMBER = 443
 SSL_PROTOCOL = 'HTTPS'
