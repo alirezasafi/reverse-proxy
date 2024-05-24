@@ -43,5 +43,5 @@ servers:
               port: 9091
     tls:
       httpsRedirect: true
-      certificate_file: monitoring.crt
-      key_file: monitoring.key
+      certificate_file: /etc/nginx/ssl/monitoring.crt
+      key_file: /etc/nginx/ssl/monitoring.key

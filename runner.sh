@@ -124,8 +124,9 @@ deploy_to_host() {
         log_info "Installing sshpass"
         apt-get install -qy sshpass
     fi
-    ssh_execute "apt-get update && sudo apt-get install -y nginx"
+    ssh_execute "apt-get update && sudo apt-get install -qy nginx"
     ssh_execute "ufw allow 'Nginx Full'"
+    ssh_execute "ufw reload"
     ssh_copy "$OUTPUT/*.conf" "/etc/nginx/conf.d/"
     ssh_execute "nginx -t"
     ssh_execute "systemctl restart nginx"

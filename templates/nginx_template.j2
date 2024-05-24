@@ -8,8 +8,8 @@ upstream {{ http_config.name }} {
 server {
     {% if server.port.protocol == 'HTTPS' -%}
     listen {{ server.port.number }} ssl;
-    ssl_certificate /etc/nginx/ssl/{{ server.tls.certificate_file }};
-    ssl_certificate_key /etc/nginx/ssl/{{ server.tls.key_file }};
+    ssl_certificate {{ server.tls.certificate_file }};
+    ssl_certificate_key {{ server.tls.key_file }};
     {% else -%}
     listen {{ server.port.number }};
     {% endif -%}

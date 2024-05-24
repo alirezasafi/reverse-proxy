@@ -1,4 +1,3 @@
-import os
 import re
 import yaml
 import argparse
@@ -176,9 +175,15 @@ class HTTP:
         if self.route:
             for route in self.route:
                 route.validate()
+        if self.block and self.redirect:
+            raise ValueError(
+                "you can't use `block` and `redirect` configs simultaneously"
+            )            
         if self.directResponse:
             if self.route or self.redirect:
-                logger.error("directResponse can be set only when `route` and `redirect` are empty!")
+                raise ValueError(
+                    "directResponse can be set only when `route` and `redirect` are empty!"
+                )
 
 @dataclass
 class ServerTLS:
@@ -187,14 +192,6 @@ class ServerTLS:
     key_file: str
 
     def validate(self, port_number):
-        if not os.path.exists(self.certificate_file):
-            raise ValueError(
-                "Certificate file not found!"
-            )
-        if not os.path.exists(self.key_file):
-            raise ValueError(
-                "TLS Key file not found!"
-            )
         if port_number != SSL_PORT_NUMBER and self.httpsRedirect:
             raise ValueError(
                 f"To enabling ssl protocol you should change the port number to {SSL_PORT_NUMBER}."
