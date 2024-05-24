@@ -46,9 +46,9 @@ ssh_copy() {
     local src=$1
     local dst=$2
     if [ -n "$SSH_PASSWORD" ]; then
-        sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no $src "$SSH_USERNAME@$HOST_NAME":$dst
+        sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no -r $src "$SSH_USERNAME@$HOST_NAME":$dst
     elif [ -n "$SSH_PRIVATE_KEY" ]; then
-        scp -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no $src "$SSH_USERNAME@$HOST_NAME":$dst
+        scp -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no -r $src "$SSH_USERNAME@$HOST_NAME":$dst
     fi
     if [ $? -ne 0 ]; then
         log_error "Failed to copy the $src to $dst"
@@ -78,23 +78,28 @@ help () {
 
 install_requirements() {
     DISTRO=$(lsb_release -cs)
+    rm -r .venv || true
     case "$DISTRO" in
         jammy | noble)
             apt-get install -qy python3-pip python3.10 python3.10-venv
+            python3.10 -m venv .venv
             ;;
         focal)
             apt-get install -qy python3-pip python3.8 python3.8-venv
+            python3.8 -m venv .venv
+            ;;
+        bionic)
+            apt-get install -qy python3-pip python3.7 python3.7-venv
+            python3.7 -m venv .venv
             ;;
         *)
             log_error "Unsupported Ubuntu version to installing python requirements: $DISTRO"
-            log_error "Use --<command> to generate the config file."
             exit 1
             ;;
     esac
-    python3 -m venv .venv
     source .venv/bin/activate
     pip3 install --upgrade pip
-    pip3 install -r python/requirements.txt
+    pip3 install -r src/python/requirements.txt
 }
 
 generate_config() {
@@ -119,10 +124,10 @@ deploy_to_host() {
         log_info "Installing sshpass"
         apt-get install -qy sshpass
     fi
-    apt-get install -qy sshpass
     ssh_execute "apt-get update && sudo apt-get install -y nginx"
     ssh_execute "ufw allow 'Nginx Full'"
-    ssh_copy $OUTPUT/*.conf /etc/nginx/conf.d/
+    ssh_copy "$OUTPUT/*.conf" "/etc/nginx/conf.d/"
+    ssh_execute "nginx -t"
     ssh_execute "systemctl restart nginx"
     log_info "Deployed and restarted NGINX on $host"
 }
@@ -166,7 +171,9 @@ for argument in "$@"; do
 done
 
 main() {
+    rm -rf $OUTPUT
     mkdir -p $OUTPUT
+    source .venv/bin/activate
     generate_config
     if [ "$DRY_RUN" == true ]; then
         exit 0;

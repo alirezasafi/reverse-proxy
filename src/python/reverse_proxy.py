@@ -3,12 +3,16 @@ import re
 import yaml
 import argparse
 import colorlog
-from dataclasses import dataclass, field
-from typing import List, Optional, Union, Literal
+from dataclasses import dataclass
+from typing import List, Optional
 from jinja2 import Environment, FileSystemLoader
 from dataclass_wizard import fromdict
 from dataclass_wizard import JSONWizard
 from dataclass_wizard.errors import ParseError, MissingFields
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 
 handler = colorlog.StreamHandler()

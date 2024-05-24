@@ -48,19 +48,6 @@ server {
         {% elif http_config.redirect -%}
         return {{ http_config.redirect.redirectCode }} {{ http_config.redirect.uri }};
         {% endif -%}
-        {% comment %} {% if http_config.fault -%}{% if http_config.fault.abort %}
-        if (rand() < {{ http_config.fault.abort.percentage }} / 100.0) {
-            return {{ http_config.fault.abort.httpStatus }};
-        }
-        {% endif %}
-        {% if http_config.fault.delay %}
-        if (rand() < {{ http_config.fault.delay.percentage }} / 100.0) {
-            set $delayed 1;
-            rewrite_by_lua '
-                ngx.sleep({{ http_config.fault.delay.fixedDelay[:-1] }});
-            ';
-        }
-        {% endif -%}{% endif -%} {% endcomment %}
         {% if http_config.directResponse -%}
         return {{ http_config.directResponse.httpStatus }} "{{ http_config.directResponse.body.string }}";
         {% endif %}

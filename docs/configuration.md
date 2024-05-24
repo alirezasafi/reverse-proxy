@@ -49,7 +49,7 @@ A list of server specifications.
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | uri | [`StringMatch`](#stringmatch) | URI to match values are case-sensitive.
-| *proxy_redirect | `bool` | This directive in Nginx is used to rewrite the location and refresh headers in the HTTP response from a proxied server, adjusting the URL in redirects to be correctly interpreted by the client.
+| *proxyRedirect | `bool` | This directive in Nginx is used to rewrite the location and refresh headers in the HTTP response from a proxied server, adjusting the URL in redirects to be correctly interpreted by the client.
 
 ### HTTPRoute
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
