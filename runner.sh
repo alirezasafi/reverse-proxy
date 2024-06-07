@@ -71,6 +71,7 @@ help () {
     echo "  --build                         Build a python binary script file from source."
     echo "  --debug                         Run reverse proxy using source code."
     echo "  --dry-run                       Run the script to validate input config."
+    echo "  --clean                         Clean the environment."
     echo "  --help                          Show this help message and exit."
     echo
     echo "Example:"

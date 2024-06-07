@@ -46,7 +46,12 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         {% elif http_config.redirect -%}
-        return {{ http_config.redirect.redirectCode }} {{ http_config.redirect.uri }};
+        {% set scheme = http_config.redirect.scheme or '$scheme' -%}
+        {% set redirect_url = http_config.redirect.uri or '$request_uri' -%}
+        {% if http_config.redirect.port -%}{% set port = ':' ~ http_config.redirect.port %}{% endif -%}
+        {% if http_config.redirect.host -%}{% set redirect_url = scheme ~ '://' ~ http_config.redirect.host ~ port ~ redirect_url -%}
+        {% endif -%}
+        return {{ http_config.redirect.redirectCode }} {{ redirect_url }};
         {% endif -%}
         {% if http_config.directResponse -%}
         return {{ http_config.directResponse.httpStatus }} "{{ http_config.directResponse.body.string }}";

@@ -62,6 +62,9 @@ A list of server specifications.
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | uri | `string` | On a redirect, overwrite the Path portion of the URL with this value. Note that the entire path will be replaced, irrespective of the request URI being matched as an exact path or prefix.
+| host | `string` | On a redirect, overwrite the host portion of the URL with this value.
+| port | `integer` | On a redirect, overwrite the port portion of the URL with this value.
+| scheme | `string` | On a redirect, overwrite the scheme portion of the URL with this value.
 | redirectCode | `integer` | On a redirect, Specifies the HTTP status code to use in the redirect response. The default response code is MOVED_PERMANENTLY (301).
 
 ### HTTPFaultInjection

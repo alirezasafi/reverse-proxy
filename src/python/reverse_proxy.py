@@ -104,10 +104,21 @@ class HTTPDirectResponse:
 
 @dataclass
 class HTTPRedirect:
-    uri: str
+    uri: Optional[str] = None
+    host: Optional[str] = None
+    port: Optional[int] = None
+    scheme: Optional[str] = None
     redirectCode: Optional[int] = HTTP_REDIRECT_CODE
 
     def validate(self):
+        if self.scheme and self.scheme not in ["http", "https"]:
+            raise ValueError(
+                f"Invalid `scheme` in redirect! value: {self.scheme}"
+            )
+        if self.uri is None and self.host is None:
+            raise ValueError(
+                "At least one of the `uri` or `host` should be specified for proper redirect!"
+            )
         if (self.redirectCode is not None and not self.redirectCode > 0):
             raise ValueError(
                 f"Weight value isn't valid! must be a positive integer. got {self.redirectCode}"
@@ -178,7 +189,9 @@ class HTTP:
         if self.block and self.redirect:
             raise ValueError(
                 "you can't use `block` and `redirect` configs simultaneously"
-            )            
+            )
+        if self.redirect:
+            self.redirect.validate()
         if self.directResponse:
             if self.route or self.redirect:
                 raise ValueError(
