@@ -132,6 +132,10 @@ To install Reverse Proxy, follow these steps:
     ```bash
     ./runner.sh --install-requirements
     ```
+3. Build Binary: Use the script provided to build a python binary script file
+    ```bash
+    ./runner.sh --build
+    ```
 
 
 ## Usage

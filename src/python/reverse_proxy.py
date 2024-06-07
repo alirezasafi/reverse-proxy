@@ -1,3 +1,4 @@
+import sys
 import re
 import yaml
 import argparse
@@ -46,7 +47,7 @@ class StringMatch:
 
 @dataclass
 class MatchURI:
-    uri: Optional[StringMatch] = None
+    uri: StringMatch
 
 
 @dataclass
@@ -157,7 +158,7 @@ class HTTPBlock:
 @dataclass
 class HTTP:
     name: str
-    match: Optional[MatchURI] = None
+    match: MatchURI
     route: Optional[List[HTTPRoute]] = None
     redirect: Optional[HTTPRedirect] = None
     fault: Optional[HTTPFaultInjection] = None
@@ -255,17 +256,17 @@ def load_config(file_path: str) -> Config:
                 f"Expected a type `{error.ann_type}`, got `{error.obj_type}`\n"
                 f"Value: `{error.obj}`"
             )   
-            exit(code=1)
+            sys.exit(1)
         except ValueError as error:
             logger.error(error)
-            exit(code=1)
+            sys.exit(1)
         except MissingFields as error:
             logger.error(
                 f"Missing values for required config '{error.class_name}'\n"
                 f"missing fields: {error.missing_fields}\n"
                 f"captured config: {error.obj}"
             )
-            exit(code=1)
+            sys.exit(1)
 
 
 def render_nginx_config(config: Config, template_path: str) -> str:

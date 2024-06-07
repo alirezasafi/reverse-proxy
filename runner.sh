@@ -9,9 +9,11 @@ RESET=$(tput sgr0)
 
 CONFIG_FILE="config.yaml"
 TEMPLATE_FILE="templates/nginx_template.j2"
+DEBUG=false
 DRY_RUN=false
 HOST_NAME="localhost"
 OUTPUT="output"
+VIRTUAL_ENV=.venv
 
 # Logger functions
 log_info() {
@@ -66,6 +68,8 @@ help () {
     echo "  --username=<ssh_username>       Specify the SSH username for deployment."
     echo "  --password=<ssh_password>       Specify the SSH password for deployment."
     echo "  --key=<ssh_private_key>         Specify the SSH private key for deployment."
+    echo "  --build                         Build a python binary script file from source."
+    echo "  --debug                         Run reverse proxy using source code."
     echo "  --dry-run                       Run the script to validate input config."
     echo "  --help                          Show this help message and exit."
     echo
@@ -78,33 +82,43 @@ help () {
 
 install_requirements() {
     DISTRO=$(lsb_release -cs)
-    rm -r .venv || true
+    rm -rf $VIRTUAL_ENV
     case "$DISTRO" in
         jammy | noble)
-            apt-get install -qy python3-pip python3.10 python3.10-venv
-            python3.10 -m venv .venv
+            apt-get install -qy python3-pip python3.10 python3.10-venv python3-dev
+            python3.10 -m venv $VIRTUAL_ENV
             ;;
         focal)
-            apt-get install -qy python3-pip python3.8 python3.8-venv
-            python3.8 -m venv .venv
+            apt-get install -qy python3-pip python3.8 python3.8-venv python3-dev
+            python3.8 -m venv $VIRTUAL_ENV
             ;;
         bionic)
-            apt-get install -qy python3-pip python3.7 python3.7-venv
-            python3.7 -m venv .venv
+            apt-get install -qy python3-pip python3.7 python3.7-venv libpython3.7-dev
+            python3.7 -m venv $VIRTUAL_ENV
             ;;
         *)
             log_error "Unsupported Ubuntu version to installing python requirements: $DISTRO"
             exit 1
             ;;
     esac
-    source .venv/bin/activate
+    source $VIRTUAL_ENV/bin/activate
     pip3 install --upgrade pip
     pip3 install -r src/python/requirements.txt
 }
 
 generate_config() {
     log_info "Using config: $CONFIG_FILE"
-    python3 src/python/reverse_proxy.py $CONFIG_FILE $TEMPLATE_FILE $OUTPUT
+    if [ "$DEBUG" == true ]; then
+        source $VIRTUAL_ENV/bin/activate
+        python3 src/python/reverse_proxy.py $CONFIG_FILE $TEMPLATE_FILE $OUTPUT
+    else
+        BINARY_FILE=dist/reverse_proxy
+        if [ ! -f "$BINARY_FILE" ]; then
+            log_error "Binary script '$BINARY_FILE' not found! Use '--build' option".
+            exit 1
+        fi
+        $BINARY_FILE $CONFIG_FILE $TEMPLATE_FILE $OUTPUT
+    fi
     log_info "NGINX config successfully generated in $OUTPUT."
 }
 
@@ -131,6 +145,21 @@ deploy_to_host() {
     ssh_execute "nginx -t"
     ssh_execute "systemctl restart nginx"
     log_info "Deployed and restarted NGINX on $host"
+}
+
+clean() {
+    rm -rf .venv dist build output || true
+    log_info "Directory cleaned!"
+}
+
+build() {
+    if [ ! -d .venv ]; then
+        log_info "Requirements not found. Installing requirements"
+        install_requirements
+    fi
+    source $VIRTUAL_ENV/bin/activate
+    pyinstaller --onefile src/python/reverse_proxy.py 
+    log_info "Binary script generated successfully!"
 }
 
 declare -A arguments
@@ -163,6 +192,17 @@ for argument in "$@"; do
             help
             exit 0;
             ;;
+        "--debug")
+            DEBUG=true
+            ;;
+        "--build")
+            build
+            exit 0;
+            ;;
+        "--clean")
+            clean
+            exit 0;
+            ;;
         *)
             log_error "Unknown option: $item_key"
             help
@@ -174,7 +214,6 @@ done
 main() {
     rm -rf $OUTPUT
     mkdir -p $OUTPUT
-    source .venv/bin/activate
     generate_config
     if [ "$DRY_RUN" == true ]; then
         exit 0;
