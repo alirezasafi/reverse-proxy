@@ -48,6 +48,22 @@ It supports:
         ```
     - Redirecting Requests: Redirect requests to another URI when specific conditions are met, such as an outdated or moved resource:
         ```yaml
+        servers:
+          - port:
+              number: 80
+              protocol: HTTP
+            hosts:
+              - "old-example.com"
+            http:
+              - name: redirect-old-domain
+                match:
+                  uri:
+                    prefix: /
+                redirect:
+                  host: "new-example.com"
+                  scheme: "https"
+        ```
+        ```yaml
         - name: redirect-old-uri
           match:
             uri:
