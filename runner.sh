@@ -139,9 +139,12 @@ deploy_to_host() {
         log_info "Installing sshpass"
         apt-get install -qy sshpass
     fi
+    DOMAINS=$(sed -n '/hosts:/,/http:/p' $CONFIG_FILE | sed -n 's/ *- //p' | xargs -I {} echo -n "-d {} ")
     ssh_execute "apt-get update && sudo apt-get install -qy nginx"
     ssh_execute "ufw allow 'Nginx Full'"
     ssh_execute "ufw reload"
+    ssh_execute "apt-get install -yq certbot python3-certbot-nginx"
+    ssh_execute "certbot --nginx $DOMAINS --non-interactive --agree-tos --redirect --register-unsafely-without-email"
     ssh_copy "$OUTPUT/*.conf" "/etc/nginx/conf.d/"
     ssh_execute "nginx -t"
     ssh_execute "systemctl restart nginx"
