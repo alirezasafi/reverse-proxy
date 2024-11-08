@@ -5,16 +5,17 @@ servers:
       protocol: HTTPS
     hosts:
       - "fashionmtes.store"
+      - "www.fashionmtes.store"
     http:
       - name: awsproxy
         match:
           uri:
             prefix: /
         destinationRoute:
-          host: www.digikala.com
+          host: www.amazon.com
           port: 443
           protocol: https
     tls:
       httpsRedirect: true
-      certificate_file: /etc/nginx/ssl/fashionmtes.store.crt
-      key_file: /etc/nginx/ssl/fashionmtes.store.key
+      certificate_file: /etc/letsencrypt/live/fashionmtes.store/fullchain.pem
+      key_file: /etc/letsencrypt/live/fashionmtes.store/privkey.pem
