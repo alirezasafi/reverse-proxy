@@ -63,7 +63,7 @@ A list of server specifications.
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | host | `string` | Destination service that traffic is being sent. Could be a DNS name with wildcard prefix or an IP address
 | port | `integer` | Destination service port number.
-| protocol | `integer` | Destination service protocol. must be one of http\|https
+| protocol | `string` | Destination service protocol. must be one of http\|https.
 
 
 ### HTTPRedirect
