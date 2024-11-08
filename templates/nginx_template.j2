@@ -1,7 +1,8 @@
-{% for server in servers -%}{% for http_config in server.http -%}{% if http_config.route -%}
+{% for server in servers -%}{% for http_config in server.http -%}{% if http_config.upstreamRoute -%}
 upstream {{ http_config.name }} {
-    {% for route in http_config.route -%} server {{ route.destination.host }}:{{ route.destination.port }}{% if route.weight is not none %} weight={{ route.weight }}{% endif %};
-    {% endfor %}   
+    {% for route in http_config.upstreamRoute -%}{% if route.upstream -%} server {{ route.upstream.host }}:{{ route.upstream.port }}{% if route.weight is not none %} weight={{ route.weight }}{% endif %};
+    {% endif -%}
+    {% endfor %}
 }
 {% endif -%}
 {% endfor -%}
@@ -13,7 +14,6 @@ server {
     {% else -%}
     listen {{ server.port.number }};
     {% endif -%}
-
     {% for host in server.hosts -%}
     server_name {{ host }};
     {% endfor -%}
@@ -39,12 +39,14 @@ server {
         {% if http_config.block.returnCode -%}
         return {{ http_config.block.returnCode }};{% endif -%}
         {% endif -%}
-        {% if http_config.route -%}
+        {% if http_config.upstreamRoute -%}
         proxy_pass http://{{ http_config.name }}/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        {% elif http_config.destinationRoute -%}
+        proxy_pass {{ http_config.destinationRoute.protocol }}://{{ http_config.destinationRoute.host }}:{{ http_config.destinationRoute.port }}/;
         {% elif http_config.redirect -%}
         {% set scheme = http_config.redirect.scheme or '$scheme' -%}
         {% set redirect_url = http_config.redirect.uri or '$request_uri' -%}

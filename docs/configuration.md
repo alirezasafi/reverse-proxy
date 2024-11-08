@@ -30,7 +30,8 @@ A list of server specifications.
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | name | `string` | The name assigned to the http.
 | match      | [`HTTPMatchRequest[]`](#httpmatchrequest)    | Match conditions to be satisfied for the rule to be activated. The rule is matched if any one of the match blocks succeed.                                                                                                                                                                                                                                               |
-| route      | [`HTTPRoute[]`](#httproute)       | The forwarding target can be one of several versions of a service. Weights associated with the service version determine the proportion of traffic it receives.                                                                                                                                                                                                                                                  |
+| upstreamRoute      | [`HTTPUpStreamRoute[]`](#httpupstreamroute)       | The forwarding target can be one of several versions of a service. Weights associated with the service version determine the proportion of traffic it receives.                                                                                                                                                                          
+| destinationRoute      | [`HTTPUpDestinationRoute[]`](#httpdestinationroute)       | Route request to a target destination host and port with specific protocol.                                                                                                                                                                                                                                                  |
 | redirect   | [`HTTPRedirect`](#httpredirect)    | If traffic passthrough option is specified in the rule, route/redirect will be ignored. The redirect primitive can be used to send a HTTP 301 redirect to a different URI or Authority.                                                                                                                                                                                                                                     |
 | *fault      | [`HTTPFaultInjection`](#httpfaultinjection)       | Fault injection policy to apply on HTTP traffic at the client side.                                                                                                                                                                                                                                             |
 | directResponse | [`HTTPDirectResponse`](#httpdirectresponse) | Direct Response is used to specify a fixed response that should be sent to clients. It can be set only when Route and Redirect are empty.|
@@ -51,11 +52,18 @@ A list of server specifications.
 | uri | [`StringMatch`](#stringmatch) | URI to match values are case-sensitive.
 | *proxyRedirect | `bool` | This directive in Nginx is used to rewrite the location and refresh headers in the HTTP response from a proxied server, adjusting the URL in redirects to be correctly interpreted by the client.
 
-### HTTPRoute
+### HTTPUpstreamRoute
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| destination | [`Destination`](#destination) | Destination uniquely identifies the instances of a service to which the request/connection should be forwarded to.
-| weight | `integer` | Weight specifies the relative proportion of traffic to be forwarded to the destination. A destination will receive weight/(sum of all weights) requests. If there is only one destination in a rule, it will receive all traffic. Otherwise, if weight is 0, the destination will not receive any traffic.
+| upstream | [`Upstream`](#upstream) | upstream uniquely identifies the instances of a service to which the request/connection should be forwarded to.
+| weight | `integer` | Weight specifies the relative proportion of traffic to be forwarded to the upstream. A upstream will receive weight/(sum of all weights) requests. If there is only one upstream in a rule, it will receive all traffic. Otherwise, if weight is 0, the upstream will not receive any traffic.
+
+### HTTPDestinationRoute
+| Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
+|------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| host | `string` | Destination service that traffic is being sent. Could be a DNS name with wildcard prefix or an IP address
+| port | `integer` | Destination service port number.
+| protocol | `integer` | Destination service protocol. must be one of http\|https
 
 
 ### HTTPRedirect
@@ -105,7 +113,7 @@ A list of server specifications.
 | *request | [`HeaderOperation`](#) | Header manipulation rules to apply before forwarding a request to the destination service.
 | *response | [`HeaderOperation`](#) | Header manipulation rules to apply before returning a response to the caller
 
-### Destination
+### Upstream
 | Name       | Type          | Description                                                                                                                                                                                                                                                                                    |
 |------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | host | `string` | Upstream service that traffic is being sent. Could be a DNS name with wildcard prefix or an IP address.

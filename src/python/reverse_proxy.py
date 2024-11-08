@@ -42,7 +42,7 @@ class StringMatch:
         attributes = [self.exact, self.prefix, self.regex]
         non_none_attributes = [attr for attr in attributes if attr is not None]
         if len(non_none_attributes) != 1:
-            raise ValueError("One of 'exact', 'prefix', or 'regex' must be specified.")
+            raise ValueError("One of 'exact', 'prefix', or 'regex' must be specified!")
 
 
 @dataclass
@@ -124,15 +124,15 @@ class HTTPRedirect:
                 f"Weight value isn't valid! must be a positive integer. got {self.redirectCode}"
             )
 
+
 @dataclass
-class Destination:
+class Upstream:
     host: str
     port: int
 
-
 @dataclass
-class HTTPRoute:
-    destination: Destination
+class HTTPUpStreamRoute:
+    upstream: Upstream
     weight: Optional[int] = None
 
     def validate(self):
@@ -140,6 +140,14 @@ class HTTPRoute:
             raise ValueError(
                 f"Weight value isn't valid! must be a positive integer. got {self.weight}"
             )
+
+
+@dataclass
+class HTTPDestinationRoute:
+    host: str
+    port: int
+    protocol: Literal["http", "https"]
+
 
 @dataclass
 class HTTPBlock:
@@ -170,7 +178,8 @@ class HTTPBlock:
 class HTTP:
     name: str
     match: MatchURI
-    route: Optional[List[HTTPRoute]] = None
+    upstreamRoute: Optional[List[HTTPUpStreamRoute]] = None
+    destinationRoute: Optional[HTTPDestinationRoute] = None
     redirect: Optional[HTTPRedirect] = None
     fault: Optional[HTTPFaultInjection] = None
     directResponse: Optional[HTTPDirectResponse] = None
@@ -183,8 +192,8 @@ class HTTP:
             self.match.uri.validate()
         if self.fault:
             self.fault.validate()
-        if self.route:
-            for route in self.route:
+        if self.upstreamRoute:
+            for route in self.upstreamRoute:
                 route.validate()
         if self.block and self.redirect:
             raise ValueError(

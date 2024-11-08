@@ -1,0 +1,20 @@
+name: awsproxy
+servers:
+  - port:
+      number: 443
+      protocol: HTTPS
+    hosts:
+      - "fashionmtes.store"
+    http:
+      - name: awsproxy
+        match:
+          uri:
+            prefix: /
+        destinationRoute:
+          host: www.digikala.com
+          port: 443
+          protocol: https
+    tls:
+      httpsRedirect: true
+      certificate_file: /etc/nginx/ssl/fashionmtes.store.crt
+      key_file: /etc/nginx/ssl/fashionmtes.store.key

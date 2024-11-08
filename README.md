@@ -11,8 +11,8 @@ It supports:
           match:
               uri:
                 prefix: /api/
-          route:
-            - destination:
+          upstreamRoute:
+            - upstream:
                 host: api-service
                 port: 8000
         ```
@@ -32,19 +32,30 @@ It supports:
         ```
 
 - **Request Routing**: Directs incoming requests to the correct backend service based on URL. This feature also includes the ability to redirect requests and return direct responses:
-    - Basic Routing: Routes requests to different backend services based on the request path:
+    - Upstream Routing: Routes requests to different upstream backend services based on the request path:
         ```yaml
         - name: alertmanager
             match:
                 uri:
                   prefix: /alert/
-            route:
-            - destination:
+            upstreamRoute:
+            - upstream:
                 host: 0.0.0.0
                 port: 9093
-            - destination:
+            - upstream:
                 host: 0.0.0.0
                 port: 9094
+        ```
+    - Destination Routing: Proxy pass requests to a target destination host based on the request path:
+        ```yaml
+        - name: alertmanager
+            match:
+                uri:
+                  prefix: /alert/
+            DestinationRoute:
+                host: alertmanager.com
+                port: 443
+                protocol: https
         ```
     - Redirecting Requests: Redirect requests to another URI when specific conditions are met, such as an outdated or moved resource:
         ```yaml
@@ -105,14 +116,14 @@ It supports:
               deny:
                 - "192.168.1.100"
         ```
-- **Traffic Shifting**: Facilitates canary releases and A/B testing by gradually diverting a percentage of traffic from one service version to another. A destination will receive weight/(sum of all weight of route):
+- **Traffic Shifting**: Facilitates canary releases and A/B testing by gradually diverting a percentage of traffic from one service version to another. A upstream will receive weight/(sum of all weight of route):
   ```yaml
-  route:
-    - destination:
+  upstreamRoute:
+    - upstream:
         host: 0.0.0.0
         port: 8000
       weight: 90 # for new version
-    - destination:
+    - upstream:
         host: 0.0.0.0
         port: 8001
       weight: 10 # for old version

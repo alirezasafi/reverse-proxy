@@ -1,0 +1,27 @@
+name: google
+servers:
+  - port:
+      number: 443
+      protocol: HTTPS
+    hosts:
+      - "0.0.0.0"
+    http:
+      - name: google
+        match:
+          uri:
+            prefix: /
+        upstreamRoute:
+          - upstream:
+              host: www.google.com
+              port: 80
+      - name: imghp
+        match:
+          uri:
+            prefix: /imghp/
+        redirect:
+          uri: /imghp
+          host: www.google.com
+    tls:
+      httpsRedirect: true
+      certificate_file: /etc/nginx/ssl/google.crt
+      key_file: /etc/nginx/ssl/google.key

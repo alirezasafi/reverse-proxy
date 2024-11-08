@@ -10,35 +10,35 @@ servers:
         match:
           uri:
             prefix: /
-        route:
-          - destination:
+        upstreamRoute:
+          - upstream:
               host: 0.0.0.0
               port: 3000
       - name: prometheus
         match:
           uri:
             prefix: /prometheus/
-        route:
-          - destination:
+        upstreamRoute:
+          - upstream:
               host: 0.0.0.0
               port: 9090
       - name: alertmanager
         match:
           uri:
             prefix: /alert/
-        route:
-          - destination:
+        upstreamRoute:
+          - upstream:
               host: 0.0.0.0
               port: 9093
-          - destination:
+          - upstream:
               host: 0.0.0.0
               port: 9094
       - name: pushgateway
         match:
           uri:
             prefix: /pushgateway/
-        route:
-          - destination:
+        upstreamRoute:
+          - upstream:
               host: 0.0.0.0
               port: 9091
     tls:
